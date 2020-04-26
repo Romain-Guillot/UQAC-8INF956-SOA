@@ -5,9 +5,9 @@ namespace StockSDK
     public class Item
     {
         public string Name;
-        public int Price;
+        public double Price;
 
-        public Item(string name, int price)
+        public Item(string name, double price)
         {
             Name = name;
             Price = price;
