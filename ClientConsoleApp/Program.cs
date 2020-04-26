@@ -1,6 +1,5 @@
 ﻿using System;
-
-
+using UserSDk;
 
 namespace ClientConsoleApp
 {
@@ -15,6 +14,11 @@ namespace ClientConsoleApp
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+            var rpcClient = new RpcClient();
+            var response = rpcClient.getUser("squizi");
+
+            Console.WriteLine(" [.] Got' "+ response);
+            rpcClient.Close();
         }
     }
 }
