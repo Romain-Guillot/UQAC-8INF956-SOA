@@ -1,11 +1,6 @@
 ﻿using MessagingSDK;
-using Newtonsoft.Json;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
+using Newtonsoft.Json;
 
 namespace UserSDk
 {
@@ -15,7 +10,7 @@ namespace UserSDk
         public string LastName;
         public string Email;
         public string Username;
-        private static ClientMessaging _clientMessaging;
+        private static ClientMessaging _clientMessaging = new ClientMessaging("user_queue");
 
 
         public User(string firstName, string lastName, string email, string username)
@@ -25,26 +20,23 @@ namespace UserSDk
             Email = email;
             Username = username;
         }
-        public User()
-        {
-            _clientMessaging = new ClientMessaging("user_queue");
-        }
-        public static void GetUser(string username)
+        
+        private User() { }
+        
+        public static User GetUser(string username)
         {
             var request = new Dictionary<string, object>
             {
                 {"Username", username}
             };
-            _clientMessaging.Send(request);
-
+            var response = _clientMessaging.Send(request);
+            var user = JsonConvert.DeserializeObject<User>((string) response["user"]);
+            return user;
         }
+        
         public void Close()
         {
             _clientMessaging.Close();
         }
-
-
     }
-
-    
 }

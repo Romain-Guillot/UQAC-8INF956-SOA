@@ -15,7 +15,7 @@ namespace ClientConsoleApp
     class ClientConsoleApp
     {
         private StockManager _stockManager = new StockManager();
-        private User _user = new User();
+        private User _user;
 
         private List<ItemLine> _card = new List<ItemLine>();
 
@@ -31,7 +31,8 @@ namespace ClientConsoleApp
         private void Authentication()
         {
             Console.Write("Username:");
-           
+            string username = Console.ReadLine(); 
+            _user = User.GetUser(username);
         }
 
         private void Shopping()
