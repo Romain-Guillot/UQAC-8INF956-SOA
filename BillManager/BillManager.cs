@@ -20,7 +20,6 @@ namespace BillManager
                 try
                 {
 
-                    //TODO
                     User user = (User)json["user"];
                     List<BillLine> billLines = (List<BillLine>)json["billLines"];
                     Dictionary<string, object> response;
