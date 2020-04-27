@@ -1,68 +1,46 @@
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Text;
-using Newtonsoft.Json;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+using System.Collections.Generic;
+using MessagingSDK;
+
 
 namespace StockSDK
 {
     public class StockManager
     {
-        private readonly IConnection connection;
-        private readonly IModel channel;
-        private readonly string replyQueueName;
-        private readonly EventingBasicConsumer consumer;
-        private readonly BlockingCollection<ItemLine> respQueue = new BlockingCollection<ItemLine>();
-        private readonly IBasicProperties props;
+
+        private ClientMessaging _clientMessaging;
         
         public StockManager()
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-
-            connection = factory.CreateConnection();
-            channel = connection.CreateModel();
-            replyQueueName = channel.QueueDeclare().QueueName;
-            consumer = new EventingBasicConsumer(channel);
-
-            props = channel.CreateBasicProperties();
-            var correlationId = Guid.NewGuid().ToString();
-            props.CorrelationId = correlationId;
-            props.ReplyTo = replyQueueName;
-
-            consumer.Received += (model, ea) =>
-            {
-                try
-                {
-                    if (ea.BasicProperties.CorrelationId == correlationId)
-                    {
-                        var body = ea.Body;
-                    
-                        var itemLine = JsonConvert.DeserializeObject<ItemLine>(Encoding.UTF8.GetString(body));
-                        Console.WriteLine("SDK:" + itemLine.Item.Name);
-                        respQueue.Add(itemLine);
-                    }
-                }
-                catch (Exception e)
-                {
-                  Console.WriteLine(e);  
-                }
-                
-            };
+            _clientMessaging = new ClientMessaging();
         }
         
         public ItemLine ReserveItem(int quantity, string name)
         {
-            var messageBytes = Encoding.UTF8.GetBytes(name);
-            channel.BasicPublish("",  "stock_queue",  props,  messageBytes);
-            channel.BasicConsume(consumer, replyQueueName, true);
-            return respQueue.Take();
+            var request = new Dictionary<string, object>
+            {
+                {"action", "reserve"},
+                {"product", name},
+                {"quantity", quantity}
+            };
+            var response = _clientMessaging.Send(request);
+            var nReserved = (int)(long) response["nReserved"];
+            return nReserved > 0 ? new ItemLine(new Item(name, quantity), nReserved) : null;
         }
 
         public void ReleaseItem(ItemLine itemLine)
         {
-            
+            var request = new Dictionary<string, object>
+            {
+                {"action", "release"},
+                {"product", itemLine.Item.Name},
+                {"quantity", itemLine.Quantity}
+            };
+            _clientMessaging.Send(request);
+        }
+
+        public void Close()
+        {
+            _clientMessaging.Close();
         }
     }
 }

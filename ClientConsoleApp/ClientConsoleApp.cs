@@ -14,6 +14,8 @@ namespace ClientConsoleApp
      */
     class ClientConsoleApp
     {
+        private StockManager _stockManager = new StockManager();
+        private RpcClient rpcClient = new RpcClient();
 
         private List<ItemLine> _card = new List<ItemLine>();
 
@@ -23,35 +25,33 @@ namespace ClientConsoleApp
             Authentication(); // blocking
             Shopping(); // blocking
             Checkout(); // blocking
-            Console.WriteLine("Bye.");
+            Close();
         }
 
         private void Authentication()
         {
-            // var rpcClient = new RpcClient();
             // Console.Write("Username:");
             // var username = Console.ReadLine();
             // var response = rpcClient.getUser(username);
-            // rpcClient.Close();
         }
 
         private void Shopping()
         {
-            
             Console.Clear();
             PrintCard();
             while (true)
             {
-
                 Console.Write("\nCHOICE: ");
                 string product = Console.ReadLine();
                 Console.Write("QUANTITY: ");
                 int quantiy = int.Parse(Console.ReadLine());
-                var stockManager = new StockManager();
-                var itemLine = stockManager.ReserveItem(quantiy, product);
-                _card.Add(itemLine);
-                Console.Clear();
+                var itemLine = _stockManager.ReserveItem(quantiy, product);
+                if (itemLine != null)
+                    _card.Add(itemLine);
+                // Console.Clear();
                 PrintCard();
+                if (itemLine == null)
+                    Console.WriteLine("Error occured. Try again.");
                 Console.Write("Continue shopping ? (Y/N)");
                 if (Console.ReadKey().Key != ConsoleKey.Y)
                     break;
@@ -78,6 +78,13 @@ namespace ClientConsoleApp
                 Console.WriteLine("Empty card");
             }
             Console.WriteLine(new string('=', 80));
+        }
+
+        private void Close()
+        {
+            _stockManager.Close();
+            rpcClient.Close();
+            Console.WriteLine("Bye.");
         }
         
         

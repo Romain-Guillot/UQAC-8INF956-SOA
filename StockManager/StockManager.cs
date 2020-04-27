@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using MessagingSDK;
 using Newtonsoft.Json;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using StockSDK;
+
 
 namespace StockManager
 {
@@ -19,76 +19,97 @@ namespace StockManager
             Quantity = quantity;
         }
     }
+    
     class StockManager
     {
-
         private Dictionary<string, ItemStock> _stock;
 
         StockManager()
         {
             LoadStock();
-            
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
-            {
-                channel.QueueDeclare("stock_queue", false, false, false, null);
-                channel.BasicQos(0, 1, false);
-                var consumer = new EventingBasicConsumer(channel);
-                channel.BasicConsume("stock_queue", false, consumer);
-
-                consumer.Received += (model, ea) =>
+            var serverRabbitMQ = new ServerMessaging("localhost", "stock_queue");
+            serverRabbitMQ.Listen((ea, json) => {
+                if (json == null)
+                    serverRabbitMQ.Send(ea, BuildErrorResponse("Bad request formatting."));
+                try
                 {
-                    byte[] messagebuffer;
-                    var props = ea.BasicProperties;
-                    var replyProps = channel.CreateBasicProperties();
-                    var body = ea.Body;
-                    replyProps.CorrelationId = props.CorrelationId;
-                    
-                    var message = Encoding.UTF8.GetString(body);
-                    Console.WriteLine("Manager: " + message);
-                    var itemLine = ReserveItem(1, message);
-                    messagebuffer = Encoding.Default.GetBytes(JsonConvert.SerializeObject(itemLine));
-                    channel.BasicPublish("", props.ReplyTo, replyProps, messagebuffer);
-                    channel.BasicAck(ea.DeliveryTag, false);
-                    
-                };
-
-                Console.WriteLine(" Press [enter] to exit.");
-                Console.ReadLine();
-            }
+                    string action = (string) json["action"];
+                    string productName = (string) json["product"];
+                    int quantity = (int)(long) json["quantity"];
+                    Dictionary<string, object> response;
+                    switch (action)
+                    {
+                        case "reserve":
+                            response = ReserveItem(quantity, productName);
+                            break;
+                        case "release":
+                            response = ReleaseItem(quantity, productName);
+                            break;
+                        default:
+                            throw new Exception("Unhandled action.");
+                    }
+                    serverRabbitMQ.Send(ea, response);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    serverRabbitMQ.Send(ea, BuildErrorResponse(e.Message));
+                }
+            });
+            Console.WriteLine(" Press any key to exit.");
+            Console.ReadKey();
+            serverRabbitMQ.Close();
         }
 
+        
         private void LoadStock()
         {
-            _stock = new Dictionary<string, ItemStock>
+            _stock = new Dictionary<string, ItemStock>();
+            var stockJson = JsonConvert.DeserializeObject<IEnumerable<Dictionary<string, object>>>(File.ReadAllText("../data/stock/stock.json"));
+            foreach (var stockItem in stockJson)
             {
-                {"Shampoo", new ItemStock(new Item("Shampoo", 5.0), 5)},
-                {"Toothbrush", new ItemStock(new Item("Toothbrush", 2.5), 3)}
-            };
+                string productName = (string) stockItem["name"];
+                double price = (double) stockItem["price"];
+                int quantity = (int)(long) stockItem["qt"];
+                _stock[productName] = new ItemStock(new Item(productName, price), quantity);
+            }
         }
 
 
-        public ItemLine ReserveItem(int quantity, string name)
+        public Dictionary<string, object> ReserveItem(int quantity, string productName)
         {
-            var item = _stock[name];
-            if (quantity <= item.Quantity)
+            if (_stock.ContainsKey(productName))
             {
-                item.Quantity -= quantity;
-                return new ItemLine(item.Item, quantity);
+                var item = _stock[productName];
+                if (quantity <= item.Quantity)
+                {
+                    item.Quantity -= quantity;
+                    return new Dictionary<string, object>{{"nReserved", quantity}};
+                }
+            }
+            return new Dictionary<string, object>{{"nReserved", 0}};
+        }
+
+
+        public Dictionary<string, object> ReleaseItem(int quantity, string productName)
+        {
+            if (_stock.ContainsKey(productName))
+            {
+                _stock[productName].Quantity += quantity;
             }
             return null;
+        }
+        
+        private Dictionary<string, object> BuildErrorResponse(string message)
+        {
+            return new Dictionary<string, object> {{"error", message}};
         }
 
 
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            
             var stockManager = new StockManager();
-            
-            
-           
         }
     }
 }
