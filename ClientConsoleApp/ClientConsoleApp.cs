@@ -66,6 +66,10 @@ namespace ClientConsoleApp
         private void PrintCard()
         {
             Console.Write(new string('=', 5));
+            Console.Write(" USER ");
+            Console.WriteLine(new string('=', 69));
+            Console.WriteLine(_user);
+            Console.Write(new string('=', 5));
             Console.Write(" CARD ");
             Console.WriteLine(new string('=', 69));
             if (_card.Count > 0)

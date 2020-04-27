@@ -38,5 +38,7 @@ namespace UserSDk
         {
             _clientMessaging.Close();
         }
+
+        public override string ToString() => $"{Username}: {FirstName} {LastName} - {Email}";
     }
 }

@@ -30,12 +30,11 @@ namespace UserManager
                     if (_user.ContainsKey(username))
                     {
                         var user = _user[username];
-                        var myUser = new Dictionary<string, object>{ { "User", user} };
-                        response = myUser;
+                        response = new Dictionary<string, object>{ { "user", JsonConvert.SerializeObject(user)} };
                     }
                     else
                     {
-                        response = null;
+                        response = BuildErrorResponse("Cannot find user.");
                     }
 
                     serverRabbitMQ.Send(ea, response);
@@ -55,8 +54,7 @@ namespace UserManager
         {
             _user = new Dictionary<string, User>();
             var users = JsonConvert.DeserializeObject<IEnumerable<User>>(File.ReadAllText("../users/users.json"));
-            _user = users.ToDictionary(u => u.Username);
-
+            _user = users.ToDictionary(u => u.Username, u => u);
         }
         
         private Dictionary<string, object> BuildErrorResponse(string message)
