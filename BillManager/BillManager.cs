@@ -28,7 +28,7 @@ namespace BillManager
                     double totalTTC = 0;
                     foreach (BillLine line in billLines)
                     {
-                        totalsanstaxes += line.Quantity * line.TotalSansTaxe;
+                        totalsanstaxes +=  line.TotalSansTaxe;
 
                     }
                     totalTTC = totalsanstaxes + (totalsanstaxes * 20) / 100;

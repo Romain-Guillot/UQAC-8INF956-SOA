@@ -51,6 +51,8 @@ namespace BillSDK
             return bill;
 
         }
+        public override string ToString() => $"Facture de {User.Username} : {TotalSansTaxe} \n Ajout des taxes (20%) : {TotalTTC}";
+
 
 
     }
@@ -66,6 +68,10 @@ namespace BillSDK
             Quantity = qt;
             TotalSansTaxe = item.Price * qt;
         }
+        public static string ToStringHeader() => "Name\t\tQt\tPrice Alone\tTotal Price";
+
+        public override string ToString() => $"{Item.Name}: {Quantity}  {Item.Price} {TotalSansTaxe}";
+
 
     }
 }

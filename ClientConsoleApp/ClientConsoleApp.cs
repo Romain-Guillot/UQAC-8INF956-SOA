@@ -77,15 +77,13 @@ namespace ClientConsoleApp
             Console.WriteLine("CHECKOUT");
             Bill bill = Bill.CreateBill(_user,_card);
             Console.WriteLine("YOUR BILL");
-            Console.WriteLine("Produit" + "------" +" Quantité "+ "------"+ "Prix hors taxe" + "------" + "Prix total");
-            foreach (BillLine line in bill.BillLines)
+            if (bill.BillLines.Count > 0)
             {
-
-                Console.WriteLine(line.Item.Name + "------" + line.Quantity  +"------" + line.Item.Price + "------" + line.Item.Price);
+                Console.WriteLine(BillLine.ToStringHeader());
+                bill.BillLines.ForEach(Console.WriteLine);
             }
-            Console.WriteLine("Prix total Hors taxe "+bill.TotalSansTaxe);
+            Console.WriteLine(bill.ToString());
 
-            Console.WriteLine("Prix total"+ bill.TotalTTC);
             
 
         }
