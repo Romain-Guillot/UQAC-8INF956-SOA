@@ -12,6 +12,12 @@ namespace UserSDk
         public string LastName;
         public string Email;
         public string Username;
+        private readonly IConnection connection;
+        private readonly IModel channel;
+        private readonly string replyQueueName;
+        private readonly EventingBasicConsumer consumer;
+        private readonly BlockingCollection<string> respQueue = new BlockingCollection<string>();
+        private readonly IBasicProperties props;
 
         public User(string firstName, string lastName, string email, string username)
         {
@@ -20,18 +26,11 @@ namespace UserSDk
             Email = email;
             Username = username;
         }
-        
-    }
-
-    public class RpcClient
-    {
-        private readonly IConnection connection;
-        private readonly IModel channel;
-        private readonly string replyQueueName;
-        private readonly EventingBasicConsumer consumer;
-        private readonly BlockingCollection<string> respQueue = new BlockingCollection<string>();
-        private readonly IBasicProperties props;
-        public RpcClient()
+        public static User getUser()
+        {
+            //TODO
+        }
+        public User()
         {
             var factory = new ConnectionFactory() { HostName = "localhost" };
 
@@ -71,11 +70,12 @@ namespace UserSDk
 
             return respQueue.Take();
         }
-
         public void Close()
         {
             connection.Close();
         }
+
     }
+
     
 }
