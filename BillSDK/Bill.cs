@@ -1,4 +1,5 @@
 ﻿using MessagingSDK;
+using Newtonsoft.Json;
 using StockSDK;
 using System;
 using System.Collections.Generic;
@@ -22,19 +23,32 @@ namespace BillSDK
             TotalSansTaxe = totalsanstaxes;
             TotalTTC = totalTTC;
         }
-        public static Bill CreateBill(User user, List<BillLine> billLines)
+        public Bill()
         {
-            double totalsanstaxes = 0;
+
+        }
+        public static Bill CreateBill(User user, List<ItemLine> lines)
+        {
+            List<BillLine> billLines = new List<BillLine>();
+            foreach (ItemLine line in lines)
+            {
+                var billline = new BillLine(line.Item, line.Quantity, line.Item.Price * line.Quantity);
+                billLines.Add(billline);
+
+            }
+
             var request = new Dictionary<string, object>
             {
                 {"user", user},
                 {"billLines", billLines}
             };
             var response = _clientMessaging.Send(request);
-            
+            var bill = new Bill();
+           
+            bill = JsonConvert.DeserializeObject<Bill>((string)response["bill"]);
 
-            double totalTTC = totalsanstaxes + (totalsanstaxes * 20)/100;
-            return new Bill(user, billLines, totalsanstaxes, totalTTC);
+
+            return bill;
 
         }
 

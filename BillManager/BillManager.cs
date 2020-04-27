@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using UserSDk;
 using BillSDK;
+using StockSDK;
 
 namespace BillManager
 {
@@ -32,7 +33,7 @@ namespace BillManager
                     }
                     totalTTC = totalsanstaxes + (totalsanstaxes * 20) / 100;
                     var bill = new Bill(user, billLines, totalsanstaxes, totalTTC);
-                   response = new Dictionary<string, object> { { "bill", JsonConvert.SerializeObject(user) } };
+                   response = new Dictionary<string, object> { { "bill", JsonConvert.SerializeObject(bill) } };
 
                    
 

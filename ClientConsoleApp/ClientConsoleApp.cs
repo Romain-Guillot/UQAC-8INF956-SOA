@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BillSDK;
 using StockSDK;
 using UserSDk;
 
@@ -16,6 +17,7 @@ namespace ClientConsoleApp
     {
         private StockManager _stockManager = new StockManager();
         private User _user;
+        private Bill _bill;
 
         private List<ItemLine> _card = new List<ItemLine>();
 
@@ -72,6 +74,8 @@ namespace ClientConsoleApp
         private void Checkout()
         {
             Console.WriteLine("CHECKOUT");
+            Bill.CreateBill(_user,_card);
+
         }
 
         private void PrintCard()
