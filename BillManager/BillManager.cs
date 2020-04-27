@@ -10,7 +10,6 @@ namespace BillManager
 {
     class BillManager
     {
-        private Dictionary<string, Bill> _bills;
         BillManager()
         {
             var serverRabbitMQ = new ServerMessaging("localhost", "bill_queue");
@@ -21,7 +20,7 @@ namespace BillManager
                 {
 
                    
-                    User user = JsonConvert.DeserializeObject<User>((string)json["bill"]);
+                    User user = JsonConvert.DeserializeObject<User>((string)json["user"]);
                     List<BillLine> billLines = JsonConvert.DeserializeObject<List<BillLine>>((string)json["billLines"]);
 
                     Dictionary<string, object> response;
