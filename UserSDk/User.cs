@@ -30,7 +30,16 @@ namespace UserSDk
                 {"Username", username}
             };
             var response = _clientMessaging.Send(request);
-            var user = JsonConvert.DeserializeObject<User>((string) response["user"]);
+            var user = new User();
+            try
+            {
+                 user = JsonConvert.DeserializeObject<User>((string)response["user"]);
+            }
+            catch (KeyNotFoundException)
+            {
+                return null;
+            }
+            
             return user;
         }
         

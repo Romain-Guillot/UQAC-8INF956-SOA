@@ -30,9 +30,20 @@ namespace ClientConsoleApp
 
         private void Authentication()
         {
+
+            
             Console.Write("Username:");
-            string username = Console.ReadLine(); 
-            _user = User.GetUser(username);
+                string username = Console.ReadLine();
+                _user = User.GetUser(username);
+                if (_user == null)
+                {
+                    Console.WriteLine("Unknow user, try again");
+                    Authentication();
+                }
+                
+            
+            
+           
         }
 
         private void Shopping()
