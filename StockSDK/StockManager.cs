@@ -11,7 +11,7 @@ namespace StockSDK
         
         public StockManager()
         {
-            _clientMessaging = new ClientMessaging();
+            _clientMessaging = new ClientMessaging("stock_queue");
         }
         
         public ItemLine ReserveItem(int quantity, string name)

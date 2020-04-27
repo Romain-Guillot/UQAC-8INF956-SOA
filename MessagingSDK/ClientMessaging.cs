@@ -17,9 +17,11 @@ namespace MessagingSDK
         private readonly EventingBasicConsumer consumer;
         private readonly BlockingCollection<Dictionary<string, object>> respQueue = new BlockingCollection<Dictionary<string, object>>();
         private readonly IBasicProperties props;
+        private readonly string queueName;
         
-        public ClientMessaging()
+        public ClientMessaging(string queueName)
         {
+            this.queueName = queueName;
             var factory = new ConnectionFactory() { HostName = "localhost" };
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
@@ -56,7 +58,7 @@ namespace MessagingSDK
         public Dictionary<string, object> Send(Dictionary<string, object> request)
         {
             var messageBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request));
-            channel.BasicPublish("",  "stock_queue",  props,  messageBytes);
+            channel.BasicPublish("",  queueName,  props,  messageBytes);
             return respQueue.Take();
         }
         
