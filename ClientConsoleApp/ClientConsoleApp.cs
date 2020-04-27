@@ -48,9 +48,9 @@ namespace ClientConsoleApp
             PrintCard();
             while (true)
             {
-                Console.Write("\nCHOICE: ");
+                Console.Write("\nCHOICE (product name): ");
                 string product = Console.ReadLine();
-                Console.Write("QUANTITY: ");
+                Console.Write("QUANTITY (number): ");
                 int quantiy = int.Parse(Console.ReadLine());
                 var itemLine = _stockManager.ReserveItem(quantiy, product);
                 if (itemLine != null)
@@ -75,13 +75,8 @@ namespace ClientConsoleApp
 
         private void PrintCard()
         {
-            Console.Write(new string('=', 5));
-            Console.Write(" USER ");
-            Console.WriteLine(new string('=', 69));
-            Console.WriteLine(_user);
-            Console.Write(new string('=', 5));
-            Console.Write(" CARD ");
-            Console.WriteLine(new string('=', 69));
+            Console.WriteLine($"USER: {_user}");
+            Console.WriteLine("CARD:");
             if (_card.Count > 0)
             {
                 Console.WriteLine(ItemLine.ToStringHeader());
@@ -91,7 +86,6 @@ namespace ClientConsoleApp
             {
                 Console.WriteLine("Empty card");
             }
-            Console.WriteLine(new string('=', 80));
         }
 
         private void Close()
