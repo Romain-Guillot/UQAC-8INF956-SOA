@@ -1,5 +1,5 @@
 ﻿using System;
-
+using StockSDK;
 
 
 namespace ClientConsoleApp
@@ -14,7 +14,11 @@ namespace ClientConsoleApp
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("WELCOME");
+            var stockManager = new StockManager();
+            stockManager.ReserveItem(2, "shampoo");
+            Console.WriteLine("Press any key to exit");
+            Console.ReadLine();
         }
     }
 }

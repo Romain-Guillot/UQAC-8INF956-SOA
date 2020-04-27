@@ -1,5 +1,8 @@
+using System;
+
 namespace StockSDK
 {
+    [Serializable]
     public class ItemLine
     {
         public Item Item;
