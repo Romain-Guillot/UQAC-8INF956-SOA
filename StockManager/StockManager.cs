@@ -1,21 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using StockSDK;
 
 namespace StockManager
 {
+    class ItemStock
+    {
+        public Item Item;
+        public int Quantity;
+
+        public ItemStock(Item item, int quantity)
+        {
+            Item = item;
+            Quantity = quantity;
+        }
+    }
     class StockManager
     {
 
-        private Dictionary<string, Item> _items;
-        private Dictionary<Item, int> _stock;
-        public IEnumerable<Item> Stock => _items.Values;
+        private Dictionary<string, ItemStock> _stock;
 
         StockManager()
         {
@@ -32,20 +39,17 @@ namespace StockManager
 
                 consumer.Received += (model, ea) =>
                 {
-                    
-                    var body = ea.Body;
+                    byte[] messagebuffer;
                     var props = ea.BasicProperties;
                     var replyProps = channel.CreateBasicProperties();
+                    var body = ea.Body;
                     replyProps.CorrelationId = props.CorrelationId;
                     
                     var message = Encoding.UTF8.GetString(body);
+                    Console.WriteLine("Manager: " + message);
                     var itemLine = ReserveItem(1, message);
-                    Console.WriteLine($"Receive : {message}");
-                    IFormatter formatter = new BinaryFormatter();  
-                    Stream stream = new MemoryStream();
-                    formatter.Serialize(stream, itemLine);
-                    var responseBytes = Encoding.UTF8.GetBytes(message);
-                    channel.BasicPublish( "", props.ReplyTo, replyProps, responseBytes);
+                    messagebuffer = Encoding.Default.GetBytes(JsonConvert.SerializeObject(itemLine));
+                    channel.BasicPublish("", props.ReplyTo, replyProps, messagebuffer);
                     channel.BasicAck(ea.DeliveryTag, false);
                     
                 };
@@ -57,19 +61,23 @@ namespace StockManager
 
         private void LoadStock()
         {
-            _items = new Dictionary<string, Item>
+            _stock = new Dictionary<string, ItemStock>
             {
-                {"Sampoo", new Item("Shampoo", 5.0)},
-                {"Toothbrush", new Item("Toothbrush", 2.5)}
+                {"Shampoo", new ItemStock(new Item("Shampoo", 5.0), 5)},
+                {"Toothbrush", new ItemStock(new Item("Toothbrush", 2.5), 3)}
             };
         }
 
 
         public ItemLine ReserveItem(int quantity, string name)
         {
-            var item = _items[name];
-            var stockSize = _stock[item];
-            return new ItemLine(item, quantity);
+            var item = _stock[name];
+            if (quantity <= item.Quantity)
+            {
+                item.Quantity -= quantity;
+                return new ItemLine(item.Item, quantity);
+            }
+            return null;
         }
 
 

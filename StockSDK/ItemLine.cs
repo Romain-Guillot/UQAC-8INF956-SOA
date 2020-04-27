@@ -13,5 +13,9 @@ namespace StockSDK
             Item = item;
             Quantity = quantity;
         }
+
+        public static string ToStringHeader() => "Qt\tPrice\tProduct";
+        
+        public override string ToString() => $"{Quantity}\t{Quantity * Item.Price}$\t{Item}";
     }
 }

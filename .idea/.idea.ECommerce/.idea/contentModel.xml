@@ -29,8 +29,8 @@
         </e>
       </e>
       <e p="ClientConsoleApp" t="IncludeRecursive">
+        <e p="ClientConsoleApp.cs" t="Include" />
         <e p="ClientConsoleApp.csproj" t="IncludeRecursive" />
-        <e p="Program.cs" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
         <e p="obj" t="ExcludeRecursive">
           <e p="Debug" t="Include">
@@ -80,7 +80,7 @@
         </e>
       </e>
       <e p="UserManager" t="IncludeRecursive">
-        <e p="Program.cs" t="Include" />
+        <e p="UserManager.cs" t="Include" />
         <e p="UserManager.csproj" t="IncludeRecursive" />
         <e p="bin" t="ExcludeRecursive" />
         <e p="obj" t="ExcludeRecursive">
@@ -92,7 +92,7 @@
         </e>
       </e>
       <e p="UserSDk" t="IncludeRecursive">
-        <e p="Class1.cs" t="Include" />
+        <e p="User.cs" t="Include" />
         <e p="UserSDk.csproj" t="IncludeRecursive" />
         <e p="bin" t="ExcludeRecursive" />
         <e p="obj" t="ExcludeRecursive">

@@ -14,5 +14,7 @@ namespace StockSDK
             Name = name;
             Price = price;
         }
+
+        public override string ToString() => $"{Name} ({Price}$)";
     }
 }

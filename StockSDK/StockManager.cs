@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Text;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -12,7 +14,7 @@ namespace StockSDK
         private readonly IModel channel;
         private readonly string replyQueueName;
         private readonly EventingBasicConsumer consumer;
-        private readonly BlockingCollection<string> respQueue = new BlockingCollection<string>();
+        private readonly BlockingCollection<ItemLine> respQueue = new BlockingCollection<ItemLine>();
         private readonly IBasicProperties props;
         
         public StockManager()
@@ -31,22 +33,31 @@ namespace StockSDK
 
             consumer.Received += (model, ea) =>
             {
-                var body = ea.Body;
-                var response = Encoding.UTF8.GetString(body);
-                Console.WriteLine("SDK :" + response);
-                if (ea.BasicProperties.CorrelationId == correlationId)
+                try
                 {
-                    respQueue.Add(response);
+                    if (ea.BasicProperties.CorrelationId == correlationId)
+                    {
+                        var body = ea.Body;
+                    
+                        var itemLine = JsonConvert.DeserializeObject<ItemLine>(Encoding.UTF8.GetString(body));
+                        Console.WriteLine("SDK:" + itemLine.Item.Name);
+                        respQueue.Add(itemLine);
+                    }
                 }
+                catch (Exception e)
+                {
+                  Console.WriteLine(e);  
+                }
+                
             };
         }
         
         public ItemLine ReserveItem(int quantity, string name)
         {
-            var messageBytes = Encoding.UTF8.GetBytes("SALUT");
+            var messageBytes = Encoding.UTF8.GetBytes(name);
             channel.BasicPublish("",  "stock_queue",  props,  messageBytes);
             channel.BasicConsume(consumer, replyQueueName, true);
-            return null;
+            return respQueue.Take();
         }
 
         public void ReleaseItem(ItemLine itemLine)
