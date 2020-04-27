@@ -32,20 +32,14 @@ namespace ClientConsoleApp
 
         private void Authentication()
         {
-
-            
             Console.Write("Username:");
-                string username = Console.ReadLine();
-                _user = User.GetUser(username);
-                if (_user == null)
-                {
-                    Console.WriteLine("Unknow user, try again");
-                    Authentication();
-                }
-                
-            
-            
-           
+            string username = Console.ReadLine();
+            _user = User.GetUser(username);
+            if (_user == null)
+            {
+                Console.WriteLine("Unknow user, try again");
+                Authentication();
+            }
         }
 
         private void Shopping()
@@ -61,7 +55,7 @@ namespace ClientConsoleApp
                 var itemLine = _stockManager.ReserveItem(quantiy, product);
                 if (itemLine != null)
                     _card.Add(itemLine);
-                // Console.Clear();
+                Console.Clear();
                 PrintCard();
                 if (itemLine == null)
                     Console.WriteLine("Error occured. Try again.");
@@ -75,17 +69,8 @@ namespace ClientConsoleApp
         {
             Console.Clear();
             Console.WriteLine("CHECKOUT");
-            Bill bill = Bill.CreateBill(_user,_card);
-            Console.WriteLine("YOUR BILL");
-            if (bill.BillLines.Count > 0)
-            {
-                Console.WriteLine(BillLine.ToStringHeader());
-                bill.BillLines.ForEach(Console.WriteLine);
-            }
-            Console.WriteLine(bill.ToString());
-
-            
-
+            var bill = Bill.CreateBill(_user,_card);
+            bill.PrintBill();
         }
 
         private void PrintCard()

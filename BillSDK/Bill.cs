@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using UserSDk;
 
+
 namespace BillSDK
 {
     public class Bill
@@ -14,8 +15,7 @@ namespace BillSDK
         public double TotalSansTaxe;
         public double TotalTTC;
         private static ClientMessaging _clientMessaging = new ClientMessaging("bill_queue");
-
-
+        
         public Bill(User user, List<BillLine> billLines, double totalsanstaxes, double totalTTC)
         {
             User = user;
@@ -23,10 +23,7 @@ namespace BillSDK
             TotalSansTaxe = totalsanstaxes;
             TotalTTC = totalTTC;
         }
-        public Bill()
-        {
-
-        }
+        
         public static Bill CreateBill(User user, List<ItemLine> lines)
         {
             List<BillLine> billLines = new List<BillLine>();
@@ -34,28 +31,30 @@ namespace BillSDK
             {
                 var billline = new BillLine(line.Item, line.Quantity);
                 billLines.Add(billline);
-
             }
-
             var request = new Dictionary<string, object>
             {
                 {"user", JsonConvert.SerializeObject(user)},
                 {"billLines", JsonConvert.SerializeObject(billLines)}
             };
             var response = _clientMessaging.Send(request);
-            var bill = new Bill();
-           
-            bill = JsonConvert.DeserializeObject<Bill>((string)response["bill"]);
-
-
+            var bill = JsonConvert.DeserializeObject<Bill>((string)response["bill"]);
             return bill;
 
         }
-        public override string ToString() => $"Facture de {User.Username} : {TotalSansTaxe} \n Ajout des taxes (20%) : {TotalTTC}";
+        
+        public override string ToString() => $"Facture de {User.Username}: {TotalSansTaxe}$\nAjout des taxes (20%) : {TotalTTC}$";
 
-
-
+        public void PrintBill()
+        {
+            Console.WriteLine(this);
+            Console.WriteLine("Details:");
+            Console.WriteLine(BillLine.ToStringHeader());
+            BillLines.ForEach(Console.WriteLine);
+        }
     }
+    
+    
     public class BillLine
     {
         public Item Item;
@@ -70,8 +69,6 @@ namespace BillSDK
         }
         public static string ToStringHeader() => "Name\t\tQt\tPrice Alone\tTotal Price";
 
-        public override string ToString() => $"{Item.Name}: {Quantity}  {Item.Price} {TotalSansTaxe}";
-
-
+        public override string ToString() => $"{Item.Name}\t\t{Quantity}\t{Item.Price}$\t\t{TotalSansTaxe}$";
     }
 }

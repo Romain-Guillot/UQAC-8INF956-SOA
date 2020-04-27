@@ -40,10 +40,8 @@ namespace MessagingSDK
                     if (ea.BasicProperties.CorrelationId == correlationId)
                     {
                         var body = ea.Body;
-                        Console.WriteLine(Encoding.UTF8.GetString(body));
                         var response = JsonConvert.DeserializeObject<Dictionary<string, object>>(Encoding.UTF8.GetString(body));
                         respQueue.Add(response);
-                        Console.WriteLine("Client mesaging :" + response.ToString());
                     }
                 }
                 catch (Exception e)
