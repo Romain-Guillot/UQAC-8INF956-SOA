@@ -32,7 +32,7 @@ namespace BillSDK
             List<BillLine> billLines = new List<BillLine>();
             foreach (ItemLine line in lines)
             {
-                var billline = new BillLine(line.Item, line.Quantity, line.Item.Price * line.Quantity);
+                var billline = new BillLine(line.Item, line.Quantity);
                 billLines.Add(billline);
 
             }
@@ -56,15 +56,15 @@ namespace BillSDK
     }
     public class BillLine
     {
-        Item Item;
+        public Item Item;
         public int Quantity;
         public double TotalSansTaxe;
 
-        public BillLine(Item item,int qt, double totalSansTaxe)
+        public BillLine(Item item,int qt)
         {
             Item = item;
             Quantity = qt;
-            TotalSansTaxe = totalSansTaxe;
+            TotalSansTaxe = item.Price * qt;
         }
 
     }

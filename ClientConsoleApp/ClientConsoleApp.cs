@@ -73,8 +73,20 @@ namespace ClientConsoleApp
 
         private void Checkout()
         {
+            Console.Clear();
             Console.WriteLine("CHECKOUT");
-            Bill.CreateBill(_user,_card);
+            Bill bill = Bill.CreateBill(_user,_card);
+            Console.WriteLine("YOUR BILL");
+            Console.WriteLine("Produit" + "------" +" Quantité "+ "------"+ "Prix hors taxe" + "------" + "Prix total");
+            foreach (BillLine line in bill.BillLines)
+            {
+
+                Console.WriteLine(line.Item.Name + "------" + line.Quantity  +"------" + line.Item.Price + "------" + line.Item.Price);
+            }
+            Console.WriteLine("Prix total Hors taxe "+bill.TotalSansTaxe);
+
+            Console.WriteLine("Prix total"+ bill.TotalTTC);
+            
 
         }
 

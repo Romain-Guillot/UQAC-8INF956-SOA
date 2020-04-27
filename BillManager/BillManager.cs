@@ -20,8 +20,10 @@ namespace BillManager
                 try
                 {
 
-                    User user = (User)json["user"];
-                    List<BillLine> billLines = (List<BillLine>)json["billLines"];
+                   
+                    User user = JsonConvert.DeserializeObject<User>((string)json["bill"]);
+                    List<BillLine> billLines = JsonConvert.DeserializeObject<List<BillLine>>((string)json["billLines"]);
+
                     Dictionary<string, object> response;
                     double totalsanstaxes = 0;
                     double totalTTC = 0;
@@ -32,7 +34,7 @@ namespace BillManager
                     }
                     totalTTC = totalsanstaxes + (totalsanstaxes * 20) / 100;
                     var bill = new Bill(user, billLines, totalsanstaxes, totalTTC);
-                   response = new Dictionary<string, object> { { "bill", JsonConvert.SerializeObject(bill) } };
+                    response = new Dictionary<string, object> { { "bill", JsonConvert.SerializeObject(bill) } };
 
                    
 
