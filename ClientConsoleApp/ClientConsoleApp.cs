@@ -15,7 +15,7 @@ namespace ClientConsoleApp
     class ClientConsoleApp
     {
         private StockManager _stockManager = new StockManager();
-        private RpcClient rpcClient = new RpcClient();
+        private User _user = new User();
 
         private List<ItemLine> _card = new List<ItemLine>();
 
@@ -30,9 +30,8 @@ namespace ClientConsoleApp
 
         private void Authentication()
         {
-            // Console.Write("Username:");
-            // var username = Console.ReadLine();
-            // var response = rpcClient.getUser(username);
+            Console.Write("Username:");
+           
         }
 
         private void Shopping()
@@ -83,7 +82,7 @@ namespace ClientConsoleApp
         private void Close()
         {
             _stockManager.Close();
-            rpcClient.Close();
+            _user.Close();
             Console.WriteLine("Bye.");
         }
         

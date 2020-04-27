@@ -1,7 +1,10 @@
-﻿using RabbitMQ.Client;
+﻿using MessagingSDK;
+using Newtonsoft.Json;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Text;
 
 namespace UserSDk
@@ -12,12 +15,8 @@ namespace UserSDk
         public string LastName;
         public string Email;
         public string Username;
-        private readonly IConnection connection;
-        private readonly IModel channel;
-        private readonly string replyQueueName;
-        private readonly EventingBasicConsumer consumer;
-        private readonly BlockingCollection<string> respQueue = new BlockingCollection<string>();
-        private readonly IBasicProperties props;
+        private static ClientMessaging _clientMessaging;
+
 
         public User(string firstName, string lastName, string email, string username)
         {
@@ -26,54 +25,24 @@ namespace UserSDk
             Email = email;
             Username = username;
         }
-        public static User getUser()
-        {
-            //TODO
-        }
         public User()
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-
-            connection = factory.CreateConnection();
-            channel = connection.CreateModel();
-            replyQueueName = channel.QueueDeclare().QueueName;
-            consumer = new EventingBasicConsumer(channel);
-
-            props = channel.CreateBasicProperties();
-            var correlationId = Guid.NewGuid().ToString();
-            props.CorrelationId = correlationId;
-            props.ReplyTo = replyQueueName;
-
-            consumer.Received += (model, ea) =>
-            {
-                var body = ea.Body;
-                var response = Encoding.UTF8.GetString(body);
-                if (ea.BasicProperties.CorrelationId == correlationId)
-                {
-                    respQueue.Add(response);
-                }
-            };
+            _clientMessaging = new ClientMessaging("user_queue");
         }
-        public string getUser(string message)
+        public static void GetUser(string username)
         {
-            var messageBytes = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(
-                exchange: "",
-                routingKey: "rpc_user",
-                basicProperties: props,
-                body: messageBytes);
+            var request = new Dictionary<string, object>
+            {
+                {"Username", username}
+            };
+            _clientMessaging.Send(request);
 
-            channel.BasicConsume(
-                consumer: consumer,
-                queue: replyQueueName,
-                autoAck: true);
-
-            return respQueue.Take();
         }
         public void Close()
         {
-            connection.Close();
+            _clientMessaging.Close();
         }
+
 
     }
 
