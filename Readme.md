@@ -4,7 +4,7 @@ Il y a 4 projets exécutables et 4 librairies.
 
 ## Exécutables : Services et application client
 - Client :
-    - `ClientConsoleApp` : l'application clint console qui demande à l'utilisateur de s'**authentifier** puis affiche une interface simple de shopping si l'authentification réussit. L'utilisateur peut **voir** les produits, les **acheter** ou les **relacher** et afficher sa facture. Cet exécutable utilise les SDK suivants : `UserSDK` pour l'authentification, `StockSDK` pour la partie shopping et `BillSDK` pour la facturation.
+    - `ClientConsoleApp` : l'application client console qui demande à l'utilisateur de s'**authentifier** puis affiche une interface simple de shopping si l'authentification réussit. L'utilisateur peut **voir** les produits, les **acheter** ou les **relacher** et afficher sa facture. Cet exécutable utilise les SDK suivants : `UserSDK` pour l'authentification, `StockSDK` pour la partie shopping et `BillSDK` pour la facturation.
 - Services:
     - `UserManager`: Chargement des utilisateurs via un fichier JSON. Traite les requêtes d'authentification.
 
