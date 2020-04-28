@@ -72,17 +72,35 @@ Trois actions possibles :
 Acheter un nouveau produit :
 ```
 ACTION (B/R/F): B
-CHOICE (product name): Guava
-QUANTITY (number): 2
-Not enough quantity !
+CHOICE (product name): Yogurt - Plain
+QUANTITY (number): 10
+Not enough quantity in stock !
 ```
 
 Relacher un produit :
+```
+ACTION (B/R/F): R
+PRODUCT TO RELEASE (product name): Guava
+Product released !
+```
 
-
+Facturation :
+```
+ACTION (B/R/F): F
+```
+```
+CHECKOUT
+Facture de smatt7: 8$
+Ajout des taxes (20%) : 9.6$
+Details:
+Name              Qt    Price Alone  Total Price
+Guava             2     2$           4$
+Yogurt - Plain    2     2$           4$
+Bye.
+```
 
 ## Communication
-Les messages transmis via les `queues` RabbitMQ sont des jsons.
+Les messages transmis via les `queues` RabbitMQ sont des JSONs.
 
 ### `UsersManager`
 Requête:
@@ -132,6 +150,6 @@ Requête:
 
 // exemple réponse succès
 {
-    "nReserved": 2
+    "nReleased": 2
 }
 ```

@@ -84,6 +84,7 @@ namespace ClientConsoleApp
                         {
                             stockManager.ReleaseItem(_card[productName]);
                             _card.Remove(productName);
+                            Console.WriteLine("Product released !");
                         }
                         catch (Exception e)
                         {
@@ -91,6 +92,7 @@ namespace ClientConsoleApp
                         }
                         break;
                     case ConsoleKey.F:
+                        isFinished = true;
                         break;
                 }
                 Console.WriteLine("\nPress any key to continue ...");

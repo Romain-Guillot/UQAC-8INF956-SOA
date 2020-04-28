@@ -85,7 +85,7 @@ namespace StockManager
             if (_stock.ContainsKey(productName))
             {
                 _stock[productName].Quantity += quantity;
-                return new Dictionary<string, object>{{"nRelease", quantity}};
+                return new Dictionary<string, object>{{"nReleased", quantity}};
             }
             return ServerMessaging.BuildErrorResponse("Item doesn't exist !");
         }
