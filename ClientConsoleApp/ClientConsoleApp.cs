@@ -78,7 +78,7 @@ namespace ClientConsoleApp
                         }
                         break;
                     case ConsoleKey.R:
-                        Console.Write("PRODUCT TO RELEASE (product name): ");
+                        Console.Write("\nPRODUCT TO RELEASE (product name): ");
                         string productName = Console.ReadLine();
                         try
                         {

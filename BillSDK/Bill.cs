@@ -36,7 +36,7 @@ namespace BillSDK
             var request = new Dictionary<string, object>
             {
                 {"user", JsonConvert.SerializeObject(user)},
-                {"billLines", JsonConvert.SerializeObject(billLines)}
+                {"products", JsonConvert.SerializeObject(billLines)}
             };
             var response = _clientMessaging.Send(request);
             var bill = JsonConvert.DeserializeObject<Bill>((string)response["bill"]);

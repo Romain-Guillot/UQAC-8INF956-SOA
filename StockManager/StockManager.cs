@@ -74,7 +74,7 @@ namespace StockManager
                     item.Quantity -= quantity;
                     return new Dictionary<string, object>{{"nReserved", quantity}};
                 }
-                return ServerMessaging.BuildErrorResponse("Not enough quantity !");
+                return ServerMessaging.BuildErrorResponse("Not enough quantity in stock !");
             }
             return ServerMessaging.BuildErrorResponse("Item doesn't exist !");
         }

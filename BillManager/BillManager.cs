@@ -34,7 +34,7 @@ namespace BillManager
         public Dictionary<string, object> BuildBill(Dictionary<string, object> request)
         {
             User user = JsonConvert.DeserializeObject<User>((string) request["user"]);
-            List<BillLine> billLines = JsonConvert.DeserializeObject<List<BillLine>>((string) request["billLines"]);
+            List<BillLine> billLines = JsonConvert.DeserializeObject<List<BillLine>>((string) request["products"]);
             double totalsanstaxes = 0;
             double totalTTC = 0;
             foreach (var line in billLines)
