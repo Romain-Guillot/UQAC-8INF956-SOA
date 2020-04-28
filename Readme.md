@@ -12,7 +12,8 @@ Il y a 4 projets exécutables et 4 librairies.
 
     - `BillManager`: Gère les requête de facturation
 
-Les services et les SDK utilisents le SDK `MessagingSDK` pour envoyer/recevoir des requêtes/réponses via RabbitMQ (par de code RabbitMQ autre part que dans ce SDK).
+Les services et les SDK utilisent la librairie `MessagingSDK` pour envoyer/recevoir des requêtes/réponses via RabbitMQ (par de code RabbitMQ autre part que dans ce SDK).
+
 
 ## Utilisation
 
@@ -99,12 +100,12 @@ Yogurt - Plain    2     2$           4$
 Bye.
 ```
 
-## Communication
-Les messages transmis via les `queues` RabbitMQ sont des JSONs.
+## Communication (requêtes / réponses)
+Les messages transmis via les `queues` RabbitMQ sont des JSONs pour des soucis d'uniformité et d'extensibilité.
 
 ### `UsersManager`
-Requête:
 ```
+// requête
 {
     "username": "Romain"
 }
