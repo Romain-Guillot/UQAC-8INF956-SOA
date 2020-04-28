@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using StockSDK;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UserSDk;
 
 
@@ -11,21 +12,21 @@ namespace BillSDK
     public class Bill
     {
         public User User;
-        public List<BillLine> BillLines;
-        public double TotalSansTaxe;
+        public IEnumerable<BillLine> BillLines;
+        public double TotalHT;
         public double TotalTTC;
-        private static ClientMessaging _clientMessaging = new ClientMessaging("bill_queue");
         
-        public Bill(User user, List<BillLine> billLines, double totalsanstaxes, double totalTTC)
+        public Bill(User user, IEnumerable<BillLine> billLines, double totalsanstaxes, double totalTTC)
         {
             User = user;
             BillLines = billLines;
-            TotalSansTaxe = totalsanstaxes;
+            TotalHT = totalsanstaxes;
             TotalTTC = totalTTC;
         }
         
-        public static Bill CreateBill(User user, List<ItemLine> lines)
+        public static Bill CreateBill(User user, IEnumerable<ItemLine> lines)
         {
+            ClientMessaging _clientMessaging = new ClientMessaging("bill_queue");
             List<BillLine> billLines = new List<BillLine>();
             foreach (ItemLine line in lines)
             {
@@ -39,18 +40,19 @@ namespace BillSDK
             };
             var response = _clientMessaging.Send(request);
             var bill = JsonConvert.DeserializeObject<Bill>((string)response["bill"]);
+            _clientMessaging.Close();
             return bill;
 
         }
         
-        public override string ToString() => $"Facture de {User.Username}: {TotalSansTaxe}$\nAjout des taxes (20%) : {TotalTTC}$";
+        public override string ToString() => $"Facture de {User.Username}: {TotalHT}$\nAjout des taxes (20%) : {TotalTTC}$";
 
         public void PrintBill()
         {
             Console.WriteLine(this);
             Console.WriteLine("Details:");
             Console.WriteLine(BillLine.ToStringHeader());
-            BillLines.ForEach(Console.WriteLine);
+            BillLines.ToList().ForEach(Console.WriteLine);
         }
     }
     

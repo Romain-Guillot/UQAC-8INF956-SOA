@@ -1,4 +1,5 @@
-﻿using MessagingSDK;
+﻿using System;
+using MessagingSDK;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -10,9 +11,7 @@ namespace UserSDk
         public string LastName;
         public string Email;
         public string Username;
-        private static ClientMessaging _clientMessaging = new ClientMessaging("user_queue");
-
-
+        
         public User(string firstName, string lastName, string email, string username)
         {
             FirstName = firstName;
@@ -22,30 +21,25 @@ namespace UserSDk
         }
         
         private User() { }
-        
+
         public static User GetUser(string username)
         {
+            ClientMessaging clientMessaging = new ClientMessaging("user_queue");
             var request = new Dictionary<string, object>
             {
                 {"Username", username}
             };
-            var response = _clientMessaging.Send(request);
-            var user = new User();
-            try
+            var response = clientMessaging.Send(request);
+
+            if (!response.ContainsKey("user"))
             {
-                 user = JsonConvert.DeserializeObject<User>((string)response["user"]);
+                clientMessaging.Close();
+                throw new Exception(response.ContainsKey("error") ? (string) response["error"] : "Error occured");
             }
-            catch (KeyNotFoundException)
-            {
-                return null;
-            }
-            
+            User user = JsonConvert.DeserializeObject<User>((string) response["user"]);
+            clientMessaging.Close();
             return user;
-        }
-        
-        public void Close()
-        {
-            _clientMessaging.Close();
+           
         }
 
         public override string ToString() => $"{Username}: {FirstName} {LastName} - {Email}";

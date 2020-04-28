@@ -11,27 +11,25 @@ namespace MessagingSDK
 {
     public class ClientMessaging
     {
-        private readonly IConnection connection;
-        private readonly IModel channel;
-        private readonly string replyQueueName;
-        private readonly EventingBasicConsumer consumer;
-        private readonly BlockingCollection<Dictionary<string, object>> respQueue = new BlockingCollection<Dictionary<string, object>>();
-        private readonly IBasicProperties props;
-        private readonly string queueName;
+        private readonly IConnection _connection;
+        private readonly IModel _channel;
+        private readonly BlockingCollection<Dictionary<string, object>> _respQueue = new BlockingCollection<Dictionary<string, object>>();
+        private readonly IBasicProperties _props;
+        private readonly string _queueName;
         
         public ClientMessaging(string queueName)
         {
-            this.queueName = queueName;
+            this._queueName = queueName;
             var factory = new ConnectionFactory() { HostName = "localhost" };
-            connection = factory.CreateConnection();
-            channel = connection.CreateModel();
-            replyQueueName = channel.QueueDeclare().QueueName;
-            consumer = new EventingBasicConsumer(channel);
-            props = channel.CreateBasicProperties();
+            _connection = factory.CreateConnection();
+            _channel = _connection.CreateModel();
+            var replyQueueName = _channel.QueueDeclare().QueueName;
+            var consumer = new EventingBasicConsumer(_channel);
+            _props = _channel.CreateBasicProperties();
             string correlationId= Guid.NewGuid().ToString();
-            props.CorrelationId = correlationId;
-            props.ReplyTo = replyQueueName;
-            channel.BasicConsume(consumer, replyQueueName, true);
+            _props.CorrelationId = correlationId;
+            _props.ReplyTo = replyQueueName;
+            _channel.BasicConsume(consumer, replyQueueName, true);
 
             consumer.Received += (model, ea) =>
             {
@@ -41,7 +39,7 @@ namespace MessagingSDK
                     {
                         var body = ea.Body;
                         var response = JsonConvert.DeserializeObject<Dictionary<string, object>>(Encoding.UTF8.GetString(body));
-                        respQueue.Add(response);
+                        _respQueue.Add(response);
                     }
                 }
                 catch (Exception e)
@@ -56,13 +54,13 @@ namespace MessagingSDK
         public Dictionary<string, object> Send(Dictionary<string, object> request)
         {
             var messageBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request));
-            channel.BasicPublish("",  queueName,  props,  messageBytes);
-            return respQueue.Take();
+            _channel.BasicPublish("",  _queueName,  _props,  messageBytes);
+            return _respQueue.Take();
         }
         
         public void Close()
         {
-            connection.Close();
+            _connection.Close();
         }
     }
 }

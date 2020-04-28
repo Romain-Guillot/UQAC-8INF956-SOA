@@ -24,7 +24,6 @@ namespace UserManager
                     serverRabbitMQ.Send(ea, BuildErrorResponse("Bad request formatting."));
                 try
                 {
-
                     string username = (string)json["Username"];
                     Dictionary<string, object> response;
                     if (_user.ContainsKey(username))
@@ -45,7 +44,7 @@ namespace UserManager
                     serverRabbitMQ.Send(ea, BuildErrorResponse(e.Message));
                 }
             });
-            Console.WriteLine(" Press any key to exit.");
+            Console.WriteLine("Press any key to exit.");
             Console.ReadKey();
             serverRabbitMQ.Close();
         }
@@ -53,7 +52,7 @@ namespace UserManager
         private void LoadUser()
         {
             _user = new Dictionary<string, User>();
-            var users = JsonConvert.DeserializeObject<IEnumerable<User>>(File.ReadAllText("../users/users.json"));
+            var users = JsonConvert.DeserializeObject<IEnumerable<User>>(File.ReadAllText("../data/users/users.json"));
             _user = users.ToDictionary(u => u.Username, u => u);
         }
         
@@ -65,7 +64,6 @@ namespace UserManager
         static void Main()
         {
             var userManager = new UserManager();
-
         }
     }
 }

@@ -11,9 +11,9 @@ namespace MessagingSDK
     public class ServerMessaging
     {
 
-        private IConnection _connection;
-        private IModel _channel;
-        private string _queueName;
+        private readonly IConnection _connection;
+        private readonly IModel _channel;
+        private readonly string _queueName;
         
         public ServerMessaging(string hostName, string queueName)
         {
@@ -52,7 +52,6 @@ namespace MessagingSDK
             var replyProps = _channel.CreateBasicProperties();
             replyProps.CorrelationId = props.CorrelationId;
             byte[] messagebuffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(responseBody));
-            Console.WriteLine(JsonConvert.SerializeObject(responseBody));
             _channel.BasicPublish("", props.ReplyTo, replyProps, messagebuffer);
             _channel.BasicAck(senderEa.DeliveryTag, false);
         }
@@ -61,6 +60,11 @@ namespace MessagingSDK
         public void Close()
         {
             _connection.Close();
+        }
+        
+        public static Dictionary<string, object> BuildErrorResponse(string message)
+        {
+            return new Dictionary<string, object> {{"error", message}};
         }
     }
 }

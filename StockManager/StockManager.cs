@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MessagingSDK;
 using Newtonsoft.Json;
 using StockSDK;
@@ -8,18 +9,6 @@ using StockSDK;
 
 namespace StockManager
 {
-    class ItemStock
-    {
-        public Item Item;
-        public int Quantity;
-
-        public ItemStock(Item item, int quantity)
-        {
-            Item = item;
-            Quantity = quantity;
-        }
-    }
-    
     class StockManager
     {
         private Dictionary<string, ItemStock> _stock;
@@ -30,33 +19,32 @@ namespace StockManager
             var serverRabbitMQ = new ServerMessaging("localhost", "stock_queue");
             serverRabbitMQ.Listen((ea, json) => {
                 if (json == null)
-                    serverRabbitMQ.Send(ea, BuildErrorResponse("Bad request formatting."));
+                    serverRabbitMQ.Send(ea, ServerMessaging.BuildErrorResponse("Bad request formatting."));
                 try
                 {
-                    string action = (string) json["action"];
-                    string productName = (string) json["product"];
-                    int quantity = (int)(long) json["quantity"];
                     Dictionary<string, object> response;
-                    switch (action)
+                    string action = (string) json["action"];
+                    if (action == "list")
+                        response = ListItems();
+                    else
                     {
-                        case "reserve":
+                        string productName = (string) json["product"];
+                        int quantity = (int)(long) json["quantity"];
+                        if (action == "reserve")
                             response = ReserveItem(quantity, productName);
-                            break;
-                        case "release":
+                        else if (action == "release")
                             response = ReleaseItem(quantity, productName);
-                            break;
-                        default:
+                        else
                             throw new Exception("Unhandled action.");
                     }
                     serverRabbitMQ.Send(ea, response);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
-                    serverRabbitMQ.Send(ea, BuildErrorResponse(e.Message));
+                    serverRabbitMQ.Send(ea, ServerMessaging.BuildErrorResponse(e.Message));
                 }
             });
-            Console.WriteLine(" Press any key to exit.");
+            Console.WriteLine("Press any key to exit.");
             Console.ReadKey();
             serverRabbitMQ.Close();
         }
@@ -76,7 +64,7 @@ namespace StockManager
         }
 
 
-        public Dictionary<string, object> ReserveItem(int quantity, string productName)
+        private Dictionary<string, object> ReserveItem(int quantity, string productName)
         {
             if (_stock.ContainsKey(productName))
             {
@@ -86,30 +74,43 @@ namespace StockManager
                     item.Quantity -= quantity;
                     return new Dictionary<string, object>{{"nReserved", quantity}};
                 }
+                return ServerMessaging.BuildErrorResponse("Not enough quantity !");
             }
-            return new Dictionary<string, object>{{"nReserved", 0}};
+            return ServerMessaging.BuildErrorResponse("Item doesn't exist !");
         }
 
 
-        public Dictionary<string, object> ReleaseItem(int quantity, string productName)
+        private Dictionary<string, object> ReleaseItem(int quantity, string productName)
         {
             if (_stock.ContainsKey(productName))
             {
                 _stock[productName].Quantity += quantity;
+                return new Dictionary<string, object>{{"nRelease", quantity}};
             }
-            return null;
+            return ServerMessaging.BuildErrorResponse("Item doesn't exist !");
         }
-        
-        private Dictionary<string, object> BuildErrorResponse(string message)
+
+        private Dictionary<string, object> ListItems()
         {
-            return new Dictionary<string, object> {{"error", message}};
+            return new Dictionary<string, object> {{"items",JsonConvert.SerializeObject(_stock.Values.Select(stock => stock.Item))}};
         }
 
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
             var stockManager = new StockManager();
+        }
+    }
+    
+    class ItemStock
+    {
+        public Item Item;
+        public int Quantity;
+
+        public ItemStock(Item item, int quantity)
+        {
+            Item = item;
+            Quantity = quantity;
         }
     }
 }

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using BillSDK;
 using StockSDK;
 using UserSDk;
+
 
 namespace ClientConsoleApp
 {
@@ -13,74 +14,112 @@ namespace ClientConsoleApp
      * c. Une fois le shopping finit, l’utilisateur pourra demander la facture de tous ses items.
      * d. Faites tout cela en ligne de commande pour vous simplifier la vie.
      */
-    class ClientConsoleApp
+    internal class ClientConsoleApp
     {
-        private StockManager _stockManager = new StockManager();
         private User _user;
-        private Bill _bill;
+        private Dictionary<string, ItemLine> _card = new Dictionary<string, ItemLine>();
+        private IEnumerable<Item> _catalog;
 
-        private List<ItemLine> _card = new List<ItemLine>();
-
-        ClientConsoleApp()
+        private ClientConsoleApp()
         {
             Console.WriteLine("Welcome !");
             Authentication(); // blocking
             Shopping(); // blocking
             Checkout(); // blocking
-            Close();
+            Console.WriteLine("Bye.");
         }
 
         private void Authentication()
         {
-            Console.Write("Username:");
-            string username = Console.ReadLine();
-            _user = User.GetUser(username);
-            if (_user == null)
+            Console.Clear();
+            do
             {
-                Console.WriteLine("Unknow user, try again");
-                Authentication();
-            }
+                try
+                {
+                    Console.Write("Username:");
+                    string username = Console.ReadLine();
+                    _user = User.GetUser(username);  // get the user, throw an exception if an error occured
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            } while (_user == null);
         }
 
         private void Shopping()
         {
-            Console.Clear();
-            PrintCard();
-            while (true)
+            var stockManager = new StockManager();
+            _catalog = stockManager.GetProducts();
+            bool isFinished = false;
+            while (!isFinished)
             {
-                Console.Write("\nCHOICE (product name): ");
-                string product = Console.ReadLine();
-                Console.Write("QUANTITY (number): ");
-                int quantiy = int.Parse(Console.ReadLine());
-                var itemLine = _stockManager.ReserveItem(quantiy, product);
-                if (itemLine != null)
-                    _card.Add(itemLine);
                 Console.Clear();
-                PrintCard();
-                if (itemLine == null)
-                    Console.WriteLine("Error occured. Try again.");
-                Console.Write("Continue shopping ? (Y/N)");
-                if (Console.ReadKey().Key != ConsoleKey.Y)
-                    break;
+                PrintHeader();
+                Console.WriteLine("\nB: Buy item     R: Release item    F: Print bill");
+                Console.Write("ACTION (B/R/F): ");
+                var action = Console.ReadKey().Key;
+                switch (action)
+                {
+                    case ConsoleKey.B:
+                        Console.Write("\nCHOICE (product name): ");
+                        string product = Console.ReadLine();
+                        Console.Write("QUANTITY (number): ");
+                        int quantity = int.Parse(Console.ReadLine());
+                        try
+                        {
+                            var itemLine = stockManager.ReserveItem(quantity, product);
+                            _card[itemLine.Item.Name] = itemLine;
+                            Console.WriteLine($"{itemLine.Item.Name} added.");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
+                        break;
+                    case ConsoleKey.R:
+                        Console.Write("PRODUCT TO RELEASE (product name): ");
+                        string productName = Console.ReadLine();
+                        try
+                        {
+                            stockManager.ReleaseItem(_card[productName]);
+                            _card.Remove(productName);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                        break;
+                    case ConsoleKey.F:
+                        break;
+                }
+                Console.WriteLine("\nPress any key to continue ...");
+                Console.ReadKey();
             }
+            stockManager.Close();
         }
 
         private void Checkout()
         {
             Console.Clear();
             Console.WriteLine("CHECKOUT");
-            var bill = Bill.CreateBill(_user,_card);
+            var bill = Bill.CreateBill(_user,_card.Values);
             bill.PrintBill();
         }
 
-        private void PrintCard()
+        private void PrintHeader()
         {
-            Console.WriteLine($"USER: {_user}");
-            Console.WriteLine("CARD:");
+            Console.WriteLine($"\nUSER: {_user}");
+            Console.WriteLine("\nPRODUCTS:");
+            foreach (var item in _catalog)
+            {
+                Console.WriteLine(item);
+            }
+            Console.WriteLine("\nCARD:");
             if (_card.Count > 0)
             {
                 Console.WriteLine(ItemLine.ToStringHeader());
-                _card.ForEach(Console.WriteLine);
+                _card.Values.ToList().ForEach(Console.WriteLine);
             }
             else
             {
@@ -88,15 +127,6 @@ namespace ClientConsoleApp
             }
         }
 
-        private void Close()
-        {
-            _stockManager.Close();
-            _user.Close();
-            Console.WriteLine("Bye.");
-        }
-        
-        
-        
         static void Main(string[] args)
         {
             new ClientConsoleApp();
